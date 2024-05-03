@@ -5,9 +5,16 @@ local MAX_BEACONS = 24
 
 local allowed_effect_types = {"assembling-machine", "mining-drill", "lab", "rocket-silo"}
 
-local allowed_beacons = {"beacon"}
+local basic_beacons = {"beacon", "beacon-quality-2", "beacon-quality-3", "beacon-quality-4", "beacon-quality-5"}
+local allowed_beacons = {}
+for _, val in pairs(basic_beacons) do
+    table.insert(allowed_beacons, val)
+end
 for i = 1, MAX_BEACONS, 1 do
     table.insert(allowed_beacons, "janky-beacon-" .. i)
+    for q = 2, 5, 1 do
+        table.insert(allowed_beacons, "janky-beacon-" .. i .. "-quality-" .. q)
+    end
 end
 
 ------------------------------------------------------------------------------------------------------
@@ -33,6 +40,39 @@ function array_has_value(array, value)
     return false
 end
 
+function get_quality_suffix(name)
+    if string.sub(name, -10, -2) == "-quality-" then
+        return string.sub(name, -10, -1)
+    else
+        return ""
+    end
+end
+
+function get_quality_level(name)
+    if string.sub(name, -10, -2) == "-quality-" then
+        return tonumber(string.sub(name, -1, -1))
+    else
+        return 1
+    end
+end
+
+function is_janky_beacon(name)
+    return string.sub(name, 1, 13) == "janky-beacon-"
+end
+
+function draw_quality_sprite(entity)
+    local qlvl = get_quality_level(entity.name)
+    if qlvl > 1 then
+
+        local sprite = rendering.draw_sprite {
+            sprite = "jq_quality_icon_" .. qlvl,
+            target = entity,
+            target_offset = {-1, 1},
+            surface = entity.surface
+        }
+    end
+end
+
 function replace_beacon(beacon, level, is_ghost)
     -- Effectively we replace the "beacon" entity with the "janky-beacon-#" entity which has the effectivity hard-coded
     -- First remember some essential stuff from the current beacon
@@ -40,12 +80,16 @@ function replace_beacon(beacon, level, is_ghost)
     local force = beacon.force
     local surface = beacon.surface
     local pos = beacon.position
+    local quality = get_quality_suffix(beacon.name)
+    if is_ghost then
+        quality = get_quality_suffix(beacon.ghost_prototype.name)
+    end
 
     -- Place the new janky beacon
     -- Generate the name
-    local e_name = "beacon"
+    local e_name = "beacon" .. quality
     if level > 0 and level <= MAX_BEACONS then
-        e_name = "janky-beacon-" .. level
+        e_name = "janky-beacon-" .. level .. quality
     end
 
     -- Generate the entity
@@ -53,7 +97,7 @@ function replace_beacon(beacon, level, is_ghost)
     if is_ghost then
         new_beacon = surface.create_entity {
             name = "entity-ghost",
-            inner_name = "beacon",
+            inner_name = "beacon" .. quality,
             position = pos,
             force = force,
             item = stck
@@ -78,6 +122,10 @@ function replace_beacon(beacon, level, is_ghost)
                 })
             end
         end
+
+        -- Add quality overlay, if any
+        draw_quality_sprite(new_beacon)
+
     end
 
     -- Destroy the old beacon entity
@@ -103,10 +151,11 @@ end)
 -- Pipette trigger
 script.on_event({defines.events.on_player_pipette}, function(e)
     -- Replace a janky beacon under the cursor with a vanilla beacon
-    if array_has_value(allowed_beacons, e.item.name) then
+    if is_janky_beacon(e.item.name) then
         local player = game.players[e.player_index]
+        local quality = get_quality_suffix(e.item.name)
         player.cursor_stack.set_stack({
-            name = "beacon"
+            name = "beacon" .. quality
         })
     end
 end)
@@ -119,14 +168,16 @@ script.on_event(defines.events.on_tick, function()
 
     -- Iterate over all inventory slots
     for item, stack in pairs(inventory.get_contents()) do
-        if array_has_value(allowed_beacons, item) and item ~= "beacon" then
+        if is_janky_beacon(item) then
+            -- Get the quality suffix
+            local quality = get_quality_suffix(item)
             -- Replace the janky beacon item with a regular beacon item
             inventory.remove({
                 name = item,
                 count = stack
             })
             inventory.insert({
-                name = "beacon",
+                name = "beacon" .. quality,
                 count = stack
             })
         end
@@ -139,6 +190,7 @@ end)
 
 function on_built_entity(entity)
     if array_has_value(allowed_beacons, entity.name) then
+        draw_quality_sprite(entity)
         -- Update all entities around this beacon
         local targets = entity.get_beacon_effect_receivers()
         for _, target in pairs(targets) do
@@ -148,9 +200,9 @@ function on_built_entity(entity)
         -- Update only this entity
         update_beacons_around_target(entity)
     elseif entity.name == "entity-ghost" and array_has_value(allowed_beacons, entity.ghost_prototype.name) and
-        entity.ghost_prototype.name ~= "beacon" then
+        not array_has_value(basic_beacons, entity.ghost_prototype.name) then
         -- Change ghost janky beacon to regular beacon
-        replace_beacon(entity, 0, true)
+        replace_beacon(entity, get_quality_level(entity.ghost_prototype.name), true)
 
     end
 end

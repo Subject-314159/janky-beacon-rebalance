@@ -1,0 +1,12 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2024-05-01
+  Features:
+    - Updated basic beacon transmission effect to match published table from FFF-409
+    - Added quality tier beacons
+    - Added compatibility with Janky Quality mod
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2024-05-02
+  Features:
+    - Initial release

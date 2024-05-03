@@ -1,9 +1,11 @@
 {
   "name": "janky-beacon-rebalance",
-  "version": "0.1.0",
-  "title": "Janky beacon rebalance - 2.0 style",
+  "version": "0.2.0",
+  "title": "Janky beacon rebalance",
   "author": "Subjectd_31415",
   "factorio_version": "1.1",
-  "dependencies": ["base >= 1.1"],
-  "description": "Implements a hacky way of the (leaked) factorio 2.0 style beacon transmission effects"
+  "dependencies": ["base >= 1.1",
+    "?janky-quality"
+  ],
+  "description": "Implements a hacky way of the new factorio 2.0 style beacon transmission effects"
 }

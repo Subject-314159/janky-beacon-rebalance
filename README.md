@@ -2,30 +2,24 @@
 
 ## What it does
 
-Rebalances the beacon effect transmission according to [this discord message](https://discord.com/channels/139677590393716737/1215073493142474833/1234845216339394631) and related [Reddit thread](https://www.reddit.com/r/factorio/comments/1cgv2fm/beacon_rework_for_space_age_andor_20_leaked/).
+Rebalances the beacon effect transmission according to [FFF-409](https://factorio.com/blog/post/fff-409).
 
-According to the guestimates the beacon effect transmission will be calculated based on how many beacons affect one assembler using the formula `1/sqrt(n)` where `n` is the number of beacons affecting that machine.
+Originally inspired by [this discord message](https://discord.com/channels/139677590393716737/1215073493142474833/1234845216339394631) and related [Reddit thread](https://www.reddit.com/r/factorio/comments/1cgv2fm/beacon_rework_for_space_age_andor_20_leaked/).
 
-Assuming 2x speed module 3 in each beacon, below number of beacons give the following speed boosts in Factorio 1.1 vs 2.0:
+The beacon effect transmission will be calculated based on how many beacons affect one assembler using the formula `1/sqrt(n)` where `n` is the number of beacons affecting that machine. With the new quality system the base beacon effect transmission ranges from x1.5 to x2.5.
 
-| Beacons | 1.1   | 2.0   |
-| ------- | ----- | ----- |
-| 1       | +50%  | +100% |
-| 2       | +100% | +141% |
-| 3       | +150% | +173% |
-| 4       | +200% | +200% |
-| 5       | +250% | +223% |
-| 6       | +300% | +244% |
-| 7       | +350% | +264% |
-| 8       | +400% | +282% |
+A picture says more than a thousand words:
+![Factorio 1.1 vs Factorio 2.0 beacon effects](https://cdn.factorio.com/assets/blog-sync/fff-409-beacon-numbers.png)
 
 ## How it works
 
 In factorio 1.1 it is not possible to dynamically change the effect transmission of a beacon entity in-game nor is it possible to dynamically change the beacon effect per machine. In order to mimic the new beacon mechanics some tricks had to be implemented.
 
-This mod adds 24 'janky beacon' entities, each with their hard-coded calculated effect transmission. When for example an assembler is surrounded by 3 beacons, each beacon is replaced by the 'janky beacon (x3)' variant with an effect transmission of `1/sqrt(3) = 0.577`. When a 4th beacon is placed all beacons are then replaced by the 'janky beacon (x4)' variant with an effect transmission of `1/sqrt(4) = 0.5`.
+This mod adds 24 'janky beacon' entities for each of the 5 quality tiers, each with their hard-coded calculated effect transmission. When for example an assembler is surrounded by 3 legendary beacons, each beacon is replaced by the 'janky beacon (x3) (legendary)' variant with an effect transmission of `2.5 * 1/sqrt(3) = 1.44`. When a 4th beacon is placed all beacons are then replaced by the 'janky beacon (x4) (legendary)' variant with an effect transmission of `2.5 * 1/sqrt(4) = 1.25`.
 
-Since there can only be one type of 'janky beacon' be placed choices have to be made. In case one beacon affects two machines, this mod picks the machine with the most beacons surrounding it to determine the effect transmission factor.
+Mixing of different quality tier beacons is possible. One legendary beacon and two rare beacons will result in one 'janky beacon (x3) (legendary)' and two 'janky beacon (x3) (rare)'. This is because the machine is surrounded by three beacons, so each beacon will be the (x3) variant.
+
+Since there can only be one type of 'janky beacon' entity that affects all machines, choices have to be made. In case one beacon affects two machines, this mod picks the machine with the most beacons surrounding it to determine the effect transmission factor.
 
 The 'janky beacon' entity and item variants can't be crafted or mined. On mining/pipette'ing the mod replaces the entity with a regular beacon. This is to prevent inventory clutter and to ensure manufacturability compatibility.
 
