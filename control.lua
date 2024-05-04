@@ -166,6 +166,11 @@ script.on_event(defines.events.on_tick, function()
     local player = game.players[1]
     local inventory = player.get_inventory(defines.inventory.character_main)
 
+    -- Early exit if there is no character/inventory (e.g. because of a new game or player died)
+    if not inventory then
+        return
+    end
+
     -- Iterate over all inventory slots
     for item, stack in pairs(inventory.get_contents()) do
         if is_janky_beacon(item) then

@@ -1,6 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2024-05-04
+  Bugfixes:
+    - Fixed that the player inventory doesn't get updated if there is no main inventory
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
-Date: 2024-05-01
+Date: 2024-05-03
   Features:
     - Updated basic beacon transmission effect to match published table from FFF-409
     - Added quality tier beacons
